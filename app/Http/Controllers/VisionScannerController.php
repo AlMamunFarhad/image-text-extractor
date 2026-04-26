@@ -16,26 +16,35 @@ class VisionScannerController extends Controller
 
     public function upload(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:jpg,jpeg,png,gif,pdf,webp,bmp,txt,tiff,heic,heif|max:10240',
-        ]);
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:jpg,jpeg,png,gif,pdf,webp,bmp,txt,tiff,heic,heif|max:10240',
+            ]);
 
-        $file = $request->file('file');
-        $path = $file->store('uploads');
+            $file = $request->file('file');
+            $path = $file->store('uploads');
 
-        $scan = VisionScan::create([
-            'file_path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'status' => 'pending'
-        ]);
+            $scan = VisionScan::create([
+                'file_path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'status' => 'pending'
+            ]);
 
-        ProcessVisionScan::dispatch($scan);
+            // Using dispatchSync to avoid queue worker dependency for immediate results
+            ProcessVisionScan::dispatchSync($scan);
 
-        return response()->json([
-            'success' => true,
-            'id' => $scan->id,
-            'message' => 'File uploaded successfully. Processing started.'
-        ]);
+            return response()->json([
+                'success' => true,
+                'id' => $scan->id,
+                'message' => 'File processed successfully.'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Upload failed: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload or processing failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function status($id)

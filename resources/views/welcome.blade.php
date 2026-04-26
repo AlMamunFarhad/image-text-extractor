@@ -174,8 +174,20 @@
                 const data = await response.json();
                 if (data.success) {
                     pollStatus(data.id, interval);
+                } else {
+                    throw new Error(data.message || 'Upload failed');
                 }
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                clearInterval(interval);
+                loadingState.classList.add('hidden');
+                
+                const errorAlert = document.getElementById('errorAlert');
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = error.message || 'The system failed to connect. Please check your internet or server.';
+                errorAlert.classList.remove('hidden');
+                
+                console.error(error); 
+            }
         });
 
         async function pollStatus(id, interval) {

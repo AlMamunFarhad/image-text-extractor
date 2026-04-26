@@ -39,9 +39,11 @@ class VisionAIService
                         Log::info("Success: Processed with Gemini.");
                         return $res;
                     }
+                } else {
+                    Log::error("Gemini Error Response: " . $response->body());
                 }
             } catch (\Exception $e) { 
-                Log::warning("Gemini Failed: " . $e->getMessage()); 
+                Log::warning("Gemini Exception: " . $e->getMessage()); 
             }
         }
 
@@ -63,9 +65,11 @@ class VisionAIService
                         Log::info("Success: Processed with OpenAI.");
                         return $res;
                     }
+                } else {
+                    Log::error("OpenAI Error Response: " . $response->body());
                 }
             } catch (\Exception $e) { 
-                Log::warning("OpenAI Failed: " . $e->getMessage()); 
+                Log::warning("OpenAI Exception: " . $e->getMessage()); 
             }
         }
 

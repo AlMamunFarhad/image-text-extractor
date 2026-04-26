@@ -43,8 +43,4 @@ return [
         'key' => env('OPENAI_API_KEY'),
     ],
 
-    'apilayer' => [
-        'key' => env('APILAYER_KEY'),
-    ],
-
 ];
