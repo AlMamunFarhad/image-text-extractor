@@ -110,6 +110,7 @@ PROMPT;
 
     public function normalizePrescriptionJson(string $raw): string
     {
+        //changes
         $json = $this->stripMarkdownJsonFence(trim($raw));
         $decoded = json_decode($json, true);
         if (! is_array($decoded)) {
