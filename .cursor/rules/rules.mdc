@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+---
+
+# Image Text Extractor (Vision Scanner)
+
+## Stack
+
+- Backend: Laravel (PHP), Eloquent, HTTP client for external APIs.
+- Frontend: Blade, Tailwind CSS, Vite; minimal vanilla JavaScript (often inline in Blade).
+- Database and cache: per Laravel `.env` (e.g. SQLite or MySQL).
+
+## Architecture
+
+- Keep controllers thin: validate, delegate, return JSON or views.
+- Use `ProcessVisionScan` for file handling and orchestration; use `VisionAIService` for LLM calls only.
+- API keys live in `config/services.php` and `.env` — never commit secrets.
+
+## Vision feature contract
+
+- `VisionAIService` extracts **eyeglass prescription** fields as JSON with keys: `left_sph`, `left_cyl`, `left_pd`, `left_ax`, `right_sph`, `right_cyl`, `right_pd`, `right_ax`. Missing values are JSON `null`; present numbers are JSON strings (preserve `+`/`-` for SPH/CYL; AX numeric string; PD may be decimal string). OpenAI `response_format: json_object` is used; `normalizePrescriptionJson()` validates and canonicalizes before storage. **PDF from the browser** is sent as PNG after client-side conversion (`pdfjs-dist`); **raw PDF** to the server still uses **Imagick** (first page) when Imagick is available.
+- The UI in `resources/views/welcome.blade.php` parses that JSON in `renderResults()` — keep prompt, normalization, and UI in sync.
+- Prefer preserving the JSON shape of `POST /upload-image` and `GET /scan-status/{id}` unless a breaking change is intentional.
+
+## Queues
+
+- Upload uses `ProcessVisionScan::dispatchSync()` so extraction completes without a queue worker in the default flow.
+
+## Local vs production
+
+- TLS verification may be relaxed in HTTP options for local tooling; tighten for production deployments.

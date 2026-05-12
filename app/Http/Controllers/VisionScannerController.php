@@ -18,7 +18,7 @@ class VisionScannerController extends Controller
     {
         try {
             $request->validate([
-                'file' => 'required|file|mimes:jpg,jpeg,png,gif,pdf,webp,bmp,txt,tiff,heic,heif|max:10240',
+                'file' => 'required|file|mimes:jpg,jpeg,png,gif,webp,bmp,tiff,heic,heif,pdf|max:10240',
             ]);
 
             $file = $request->file('file');
@@ -31,7 +31,7 @@ class VisionScannerController extends Controller
             ]);
 
             // Using dispatchSync to avoid queue worker dependency for immediate results
-            ProcessVisionScan::dispatchSync($scan);
+            ProcessVisionScan::dispatch($scan);
 
             return response()->json([
                 'success' => true,
